@@ -1,0 +1,85 @@
+# ────────────────────────────────────────────────────────────────────
+# ApplicationSet — one CRD, many Applications.
+#
+# This file demonstrates the **list generator**: it produces one ArgoCD
+# Application per element of the list. The two elements below
+# (zoneType: public, zoneType: private) generate two Applications:
+#
+#   uswest2-external-dns-public   →  Helm install external-dns (public  zone)
+#   uswest2-external-dns-private  →  Helm install external-dns (private zone)
+#
+# Each Application pulls external-dns directly from the upstream Helm
+# repo and parameterises the deployment with the list element's values.
+#
+# Apply once:
+#  
+# ────────────────────────────────────────────────────────────────────
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: uswest2-external-dns
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=default"]
+
+  generators:
+    - list:
+        elements:
+          - zoneType: public
+          - zoneType: private
+
+  template:
+    metadata:
+      name: "uswest2-external-dns-{{ .zoneType }}"
+      labels:
+        acme.example/project-group: all
+    spec:
+      project: default
+
+      # Pull external-dns from the upstream Helm chart repository.
+      source:
+        repoURL: 'https://kubernetes-sigs.github.io/external-dns'
+        chart: external-dns
+        targetRevision: 1.20.0
+        helm:
+          releaseName: "external-dns-{{ .zoneType }}"
+          valuesObject:
+            # Reference for the full set of available knobs:
+            # https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/values.yaml
+            extraArgs:
+              - --aws-zone-type={{ .zoneType }}
+              # Match resources labeled with this zone type OR "both"
+              # (for records that need to live in both zones)
+              - --label-filter=external-dns in ({{ .zoneType }}, both)
+              - --fqdn-template={{`{{.Name}}`}}.uswest2.demo.acme.example   # TODO: replace with your DNS zone
+            env:
+              - name: AWS_REGION
+                value: us-west-2
+            provider: aws
+            aws:
+              zoneType: '{{ .zoneType }}'
+              region: us-west-2
+            registry: txt
+            txtOwnerId: 'uswest2-{{ .zoneType }}'
+            domainFilters:
+              - 'uswest2.demo.acme.example'                                  # TODO: replace with your DNS zone
+            logLevel: debug
+            sources:
+              - ingress
+              - service
+            policy: upsert-only
+
+      destination:
+        name: 'in-cluster'
+        namespace: kube-system
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - ApplyOutOfSyncOnly=true
+          - FailOnSharedResource=true
+          - ServerSideApply=true

@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────────────────────────
+# Environment: us-west-2 (demo) — second region, same pattern
+# ──────────────────────────────────────────────────────────────────
+name: uswest2-demo
+region: us-west-2
+region_string: uswest2
+businessUnit: platform
+environment: demo
+env: demo
+dns: demo.acme.example                             # TODO: replace with your DNS zone
+argoProject: services-observability
+argoRepo: https://github.com/acme-platform/argo-charts-demo.git   # TODO: replace with your repo
+argoRepoBranch: main
+server: https://WXYZ5678EXAMPLE.gr7.us-west-2.eks.amazonaws.com   # TODO: replace with your EKS endpoint
+
+vpnCidr: 10.0.0.0/8, 172.16.0.0/12                 # TODO: replace with your VPN CIDRs
+
+# This env runs a leaner footprint — skip a few services.
+applicationBlacklist:
+  - opentelemetry-demo
+  - pyroscope
+  - alloy

@@ -1,0 +1,4 @@
+grafana chart deployed.
+
+This is a DEMO STUB — replace this directory with the real upstream chart
+(e.g. `helm pull grafana/grafana`) before running in production.

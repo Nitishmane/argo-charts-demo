@@ -1,0 +1,8 @@
+apiVersion: v2
+name: pyroscope
+description: |
+  Demo stub for pyroscope. In production this folder is a vendored upstream
+  Helm chart (e.g. from https://grafana.github.io/helm-charts).
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

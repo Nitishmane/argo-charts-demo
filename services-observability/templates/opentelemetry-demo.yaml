@@ -1,0 +1,30 @@
+{{- if not (has "opentelemetry-demo" .Values.applicationBlacklist) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: opentelemetry-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject }}
+  destination:
+    namespace: opentelemetry-demo
+    server: {{ .Values.server }}
+  source:
+    path: opentelemetry-demo
+    repoURL: {{ .Values.argoRepo }}
+    targetRevision: {{ .Values.argoRepoBranch }}
+    project: {{ .Values.argoProject }}
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

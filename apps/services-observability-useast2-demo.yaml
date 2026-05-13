@@ -1,0 +1,31 @@
+# ──────────────────────────────────────────────────────────────────
+# Root Application — points ArgoCD at the parent observability chart
+# for the us-east-2 demo cluster. Apply this once per env.
+#   This gets deployed from argocd values file
+# ──────────────────────────────────────────────────────────────────
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: services-observability-useast2-demo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  source:
+    path: services-observability
+    repoURL: https://github.com/acme-platform/argo-charts-demo.git   # TODO: replace with your repo
+    targetRevision: main
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-useast2-demo.yaml
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true

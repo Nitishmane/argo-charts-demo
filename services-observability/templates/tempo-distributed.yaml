@@ -1,0 +1,53 @@
+{{- if not (has "tempo-distributed" .Values.applicationBlacklist) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tempo-distributed
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject }}
+  destination:
+    namespace: tempo-distributed
+    server: {{ .Values.server }}
+  source:
+    path: tempo-distributed
+    repoURL: {{ .Values.argoRepo }}
+    targetRevision: {{ .Values.argoRepoBranch }}
+    project: {{ .Values.argoProject }}
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        metricsGenerator:
+          enabled: true
+        tempo:
+          storage:
+            trace:
+              backend: s3
+              s3:
+                bucket: acme-tempo-{{ .Values.region_string }}-demo   # TODO: replace with your bucket
+                endpoint: s3.{{ .Values.region }}.amazonaws.com
+                region: {{ .Values.region }}
+                insecure: false
+                forcepathstyle: true
+        traces:
+          otlp:
+            grpc:
+              enabled: true
+            http:
+              enabled: true
+          zipkin:
+            enabled: false
+          jaeger:
+            thriftHttp:
+              enabled: false
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

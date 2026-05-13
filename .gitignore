@@ -1,0 +1,7 @@
+**/.direnv
+**/.envrc
+**/.DS_Store
+**/charts/
+**/Chart.lock
+/tmp/
+/rendered/

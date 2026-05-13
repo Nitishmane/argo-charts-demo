@@ -1,0 +1,24 @@
+# Demo stub Deployment so `helm template` renders something for alloy.
+# In production this directory is replaced with the upstream alloy chart's templates.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alloy-demo
+  labels:
+    app.kubernetes.io/name: alloy
+    app.kubernetes.io/component: demo-stub
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: alloy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: alloy
+    spec:
+      containers:
+        - name: alloy
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 80

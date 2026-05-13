@@ -1,0 +1,40 @@
+{{- if not (has "pyroscope" .Values.applicationBlacklist) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pyroscope
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject }}
+  destination:
+    namespace: pyroscope
+    server: {{ .Values.server }}
+  source:
+    path: pyroscope
+    repoURL: {{ .Values.argoRepo }}
+    targetRevision: {{ .Values.argoRepoBranch }}
+    project: {{ .Values.argoProject }}
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        pyroscope:
+          extraPorts:
+            - name: otlp-grpc
+              port: 4317
+              targetPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              port: 4318
+              targetPort: 4318
+              protocol: TCP
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

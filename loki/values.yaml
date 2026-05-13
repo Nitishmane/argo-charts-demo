@@ -1,0 +1,9 @@
+# Demo stub values for loki.
+# In production, this is the full upstream chart's values.yaml.
+replicaCount: 1
+image:
+  repository: nginx
+  tag: stable
+service:
+  type: ClusterIP
+  port: 80

@@ -1,0 +1,53 @@
+{{- if not (has "grafana" .Values.applicationBlacklist) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject }}
+  destination:
+    namespace: grafana
+    server: {{ .Values.server }}
+  source:
+    path: grafana
+    repoURL: {{ .Values.argoRepo }}
+    targetRevision: {{ .Values.argoRepoBranch }}
+    project: {{ .Values.argoProject }}
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        persistence:
+          enabled: true
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: loki
+                type: loki
+                url: http://loki-gateway.loki
+                access: proxy
+                editable: true
+              - name: Mimir
+                type: prometheus
+                url: http://mimir-distributed-nginx.mimir-distributed.svc.cluster.local/prometheus
+                isDefault: true
+                editable: true
+              - name: Tempo
+                type: tempo
+                url: http://tempo-distributed-query-frontend.tempo-distributed.svc.cluster.local:3100
+                editable: true
+                jsonData:
+                  serviceMap:
+                    datasourceUid: 'Mimir'
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

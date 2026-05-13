@@ -1,0 +1,54 @@
+{{- if not (has "mimir-distributed" .Values.applicationBlacklist) }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mimir-distributed
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argoProject }}
+  destination:
+    namespace: mimir-distributed
+    server: {{ .Values.server }}
+  source:
+    path: mimir-distributed
+    repoURL: {{ .Values.argoRepo }}
+    targetRevision: {{ .Values.argoRepoBranch }}
+    project: {{ .Values.argoProject }}
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        minio:
+          enabled: false
+        mimir:
+          structuredConfig:
+            common:
+              storage:
+                backend: s3
+                s3:
+                  bucket_name: acme-mimir-ruler-demo                  # TODO: replace with your bucket
+                  endpoint: s3.{{ .Values.region }}.amazonaws.com
+                  region: {{ .Values.region }}
+                  insecure: false
+            blocks_storage:
+              storage_prefix: blocks
+              s3:
+                bucket_name: acme-mimir-{{ .Values.region_string }}-demo   # TODO: replace with your bucket
+            alertmanager_storage:
+              storage_prefix: alertmanager
+              s3:
+                bucket_name: acme-mimir-{{ .Values.region_string }}-demo   # TODO: replace with your bucket
+            ruler_storage:
+              storage_prefix: ruler
+              s3:
+                bucket_name: acme-mimir-{{ .Values.region_string }}-demo   # TODO: replace with your bucket
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

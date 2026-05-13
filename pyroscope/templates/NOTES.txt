@@ -1,0 +1,4 @@
+pyroscope chart deployed.
+
+This is a DEMO STUB — replace this directory with the real upstream chart
+(e.g. `helm pull grafana/pyroscope`) before running in production.

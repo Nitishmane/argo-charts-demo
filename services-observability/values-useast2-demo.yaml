@@ -1,0 +1,26 @@
+# ──────────────────────────────────────────────────────────────────
+# Environment: us-east-2 (demo)
+# All values prefixed with "acme-" are placeholders — swap for your
+# real infra. Search for "# TODO" to find every required substitution.
+# ──────────────────────────────────────────────────────────────────
+name: useast2-demo
+region: us-east-2
+region_string: useast2
+businessUnit: platform
+environment: demo
+env: demo
+dns: demo.acme.example                             # TODO: replace with your DNS zone
+argoProject: services-observability
+argoRepo: https://github.com/acme-platform/argo-charts-demo.git   # TODO: replace with your repo
+argoRepoBranch: main
+# EKS API server endpoint — get with:
+#   aws eks describe-cluster --name <cluster> --query cluster.endpoint
+server: https://ABCD1234EXAMPLE.gr7.us-east-2.eks.amazonaws.com   # TODO: replace with your EKS endpoint
+
+# Allow-listed source CIDRs for ALB ingress
+vpnCidr: 10.0.0.0/8, 172.16.0.0/12                 # TODO: replace with your VPN CIDRs
+
+# Use applicationBlacklist to skip services in this environment.
+# Comment items out to enable them.
+applicationBlacklist:
+  - opentelemetry-demo
